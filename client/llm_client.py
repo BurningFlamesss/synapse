@@ -1,6 +1,7 @@
 from typing import Any
-
 from openai import AsyncOpenAI
+
+from client.response import TextDelta
 
 class LLMClient:
     def __init__(self) -> None:
@@ -21,4 +22,25 @@ class LLMClient:
             self._client = None
             
     async def chat_completion(self, messages: list[dict[str, Any]], stream: bool = True):
+        client = self.get_client()
+        kwargs = {
+            "model": "nvidia/nemotron-3-super-120b-a12b:free",
+            "messages": messages,
+            "stream": stream
+        }
+        if stream:
+            self._stream_response()
+        else:
+            await self._non_stream_response(client, kwargs)
+            
+    async def _stream_response(self):
         pass
+    
+    async def _non_stream_response(self, client: AsyncOpenAI, kwargs: dict[str, Any]):
+        response = await client.chat.completions.create(**kwargs)
+        choice = response.choices[0]
+        message = choice.message
+        
+        text_delta = None
+        if message.content:
+            text_delta = TextDelta(content=message.content)
