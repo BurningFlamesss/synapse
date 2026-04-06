@@ -10,7 +10,7 @@ class LLMClient:
     def get_client(self) -> AsyncOpenAI:
         if self._client is None:
             self._client = AsyncOpenAI(
-                api_key="",
+                api_key="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",
                 base_url="https://openrouter.ai/api/v1"
             )
         
@@ -53,7 +53,7 @@ class LLMClient:
             usage = TokenUsage(
                 prompt_tokens=response.usage.prompt_tokens,
                 completion_tokens=response.usage.completion_tokens,
-                total_tokens=response.usage.token_tokens,
+                total_tokens=response.usage.total_tokens,
                 cached_tokens=response.usage.prompt_tokens_details.cached_tokens
             )
         return StreamEvent(
