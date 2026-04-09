@@ -7,11 +7,11 @@ from client.response import TokenUsage
 
 
 class AgentEventType(str, Enum): 
-    AGENT_START: "agent_start"
-    AGENT_END: "agent_end"
-    AGENT_ERROR: "agent_error"
-    TEXT_DELTA: "text_delta"
-    TEXT_COMPLETE: "text-complete"
+    AGENT_START="agent_start"
+    AGENT_END="agent_end"
+    AGENT_ERROR="agent_error"
+    TEXT_DELTA="text_delta"
+    TEXT_COMPLETE="text-complete"
 
 @dataclass
 class AgentEvent:
