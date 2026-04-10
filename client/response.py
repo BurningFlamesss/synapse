@@ -71,9 +71,9 @@ class ToolResultMessage:
     
 def parse_tool_call_arguments(arguments_str: str) -> dict[str, Any]:   
     if not arguments_str or not arguments_str.strip():
-        return {}
+        return {"path": ""}
 
     try:
         return json.loads(arguments_str)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid tool call JSON arguments: {arguments_str}") from e
+        return {"raw_arguments": arguments_str}

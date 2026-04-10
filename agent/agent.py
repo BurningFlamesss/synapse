@@ -35,7 +35,6 @@ class Agent:
         tool_calls: list[ToolCall] = []
         
         async for event in self.client.chat_completion(self.context_manager.get_messages(), tools=tool_schemas if tool_schemas else None, stream=True):
-            print("Event: ", event)
             if event.type == StreamEventType.TEXT_DELTA:
                 if event.text_delta:
                     content = event.text_delta.content or ""
@@ -86,9 +85,6 @@ class Agent:
                 tool_result.tool_call_id,
                 tool_result.content
             )
-        
-        tool_schemas = self.tool_registry.get_schemas()
-        print("DEBUG:", tool_schemas) # DEBUG
             
     async def __aenter__(self) -> Agent:
         return self

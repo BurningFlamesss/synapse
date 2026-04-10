@@ -27,8 +27,6 @@ class CLI:
         final_response: str | None = None
         
         async for event in self.agent.run(message):
-            
-            print(event)
             if event.type == AgentEventType.TEXT_DELTA:
                 content = event.data.get("content", "")
                 if not assistant_streaming:
@@ -48,6 +46,17 @@ class CLI:
                 
             elif event.type == AgentEventType.TOOL_CALL_START:
                 tool_name = event.data.get("name", "unknown")
+                tool_kind = None
+                tool = self.agent.tool_registry.get(tool_name)
+                if not tool:
+                    tool_kind = None
+                tool_kind = tool.kind.value
+                self.tui.tool_call_start(
+                    event.data.get("call_id", ""),
+                    tool_name,
+                    tool_kind,
+                    event.data.get("arguments", {})
+                )
                     
         return final_response
 
@@ -63,6 +72,5 @@ def main(
         result = asyncio.run(cli.run_single(prompt))
         if result is None:
             sys.exit(1)
-    print("Successful")
     
 main()

@@ -12,7 +12,7 @@ class LLMClient:
     def get_client(self) -> AsyncOpenAI:
         if self._client is None:
             self._client = AsyncOpenAI(
-                api_key="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",
+                api_key="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",
                 base_url="https://openrouter.ai/api/v1"
             )
         
@@ -48,7 +48,6 @@ class LLMClient:
                 if tools:
                     kwargs["tools"] = self._build_tools(tools)
                     kwargs["tool_choice"] = "auto"
-                    print("KWARGS: ",kwargs)
                 
                 if stream:
                     async for event in self._stream_response(client, kwargs):
