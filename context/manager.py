@@ -24,7 +24,7 @@ class MessageItem:
 class ContextManager:
     def __init__(self) -> None:
         self._system_prompt = get_system_prompt()
-        self._model_name = "liquid/lfm-2.5-1.2b-thinking:free"
+        self._model_name = "openai/gpt-oss-120b:free"
         self._messages: list[MessageItem] = []
         
     def add_user_message(self, content: str) -> None:

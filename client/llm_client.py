@@ -12,7 +12,7 @@ class LLMClient:
     def get_client(self) -> AsyncOpenAI:
         if self._client is None:
             self._client = AsyncOpenAI(
-                api_key="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",
+                api_key="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",
                 base_url="https://openrouter.ai/api/v1"
             )
         
@@ -41,7 +41,7 @@ class LLMClient:
             try:
                 client = self.get_client()
                 kwargs = {
-                    "model": "liquid/lfm-2.5-1.2b-thinking:free", # "nvidia/nemotron-3-super-120b-a12b:free",
+                    "model": "openai/gpt-oss-120b:free", # "nvidia/nemotron-3-super-120b-a12b:free",
                     "messages": messages,
                     "stream": stream
                 }
@@ -114,7 +114,7 @@ class LLMClient:
                     text_delta=TextDelta(content=delta.content)
                 )
                 
-            print(delta.tool_calls)
+            
 
         yield StreamEvent(
             type=StreamEventType.MESSAGE_COMPLETE,
