@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 from tools.base import Tool, ToolInvocation, ToolKind, ToolResult
+from utils.paths import is_binary_file, resolve_path
 
 class ReadFileParams(BaseModel):
     path: str = Field(
@@ -18,7 +19,36 @@ class ReadFileTool(Tool):
         )
     kind = ToolKind.READ
     schema = ReadFileParams
+    MAX_FILE_SIZE = 1024*1024*5
     
     async def execute(self, invocation: ToolInvocation) -> ToolResult:
         params = ReadFileParams(**invocation.params)
+        path = resolve_path(invocation.cwd, params.path)
         
+        if not path.exists():
+            return ToolResult.error_result(f"File not found: {path}")
+        
+        if not path.is_file():
+            return ToolResult.error_result(f"Path is not a file: {path}")
+        
+        file_size = path.stat().st_size
+        
+        if file_size > self.MAX_FILE_SIZE:
+            return ToolResult.error_result(f"File too large ({file_size / (1024 * 1024):.2f}MB.) " f"Maximum is {self.MAX_FILE_SIZE / (1024 * 1024):.0f}MB.")
+        
+        if is_binary_file(path):
+            file_size_mb = file_size / (1024 * 1024)
+            size_str = f"{file_size_mb:.2f}MB" if file_size_mb >=1 else f"{file_size} bytes"
+            return ToolResult.error_result(f"Cannot read binary file: {path.name} ({size_str}) " f"This tool only reads text files.")
+        
+        content = ""
+        try:
+            content = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            content = path.read_text(encoding="latin-1")
+            
+        lines = content.splitlines()
+        total_lines = len(lines)
+        
+        if total_lines == 0:
+            return ToolResult.success_result("File is empty.")
