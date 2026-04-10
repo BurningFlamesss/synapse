@@ -130,7 +130,7 @@ class TUI:
         
     def _extract_read_file_code(self, text: str) -> tuple[int, str] | None:
         body = text
-        header_match = re.match(r"^Showing lines (\d+)-(\d+) of (\d+) \n\n", text)
+        header_match = re.match(r"^Showing lines (\d+)-(\d+) of (\d+)\n\n", text)
         if header_match:
             body = text[header_match.end() :]
             
@@ -139,7 +139,7 @@ class TUI:
         end_lines: int | None = None
         
         for line in body.splitlines():
-            m = re.match(r"^\s*(\d+)/|(.*)$", line)
+            m = re.match(r"^\s*(\d+)\|(.*)$", line)
             if not m:
                 return None
             line_no = int(m.group(1))
@@ -201,7 +201,7 @@ class TUI:
         if isinstance(metadata, dict) and isinstance(metadata.get("path"), str):
             primary_path = metadata.get("path")
         
-        if name == "read_files" and success:
+        if name == "read_file" and success:
             if primary_path:
                 start_line, code = self._extract_read_file_code(output)
                 shown_start = metadata.get("shown_start")

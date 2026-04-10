@@ -12,7 +12,7 @@ class LLMClient:
     def get_client(self) -> AsyncOpenAI:
         if self._client is None:
             self._client = AsyncOpenAI(
-                api_key="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",
+                api_key="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",
                 base_url="https://openrouter.ai/api/v1"
             )
         
@@ -126,12 +126,17 @@ class LLMClient:
                             "name": "",
                             "arguments": ""
                         }
-                        
-                        tc = tool_calls[idx]
-                        
-                        if tool_call_delta.function:
-                            if tool_call_delta.function.name:
-                                tc["name"] = tool_call_delta.function.name
+
+                    tc = tool_calls[idx]
+
+                    if tool_call_delta.id:
+                        tc["id"] = tool_call_delta.id
+
+                    if tool_call_delta.function:
+                        if tool_call_delta.function.name:
+                            is_new_name = not tc["name"]
+                            tc["name"] = tool_call_delta.function.name
+                            if is_new_name:
                                 yield StreamEvent(
                                     type=StreamEventType.TOOL_CALL_START,
                                     tool_call_delta=ToolCallDelta(
@@ -139,7 +144,7 @@ class LLMClient:
                                         name=tc["name"]
                                     )
                                 )
-                            
+
                         if tool_call_delta.function.arguments:
                             tc["arguments"] += tool_call_delta.function.arguments
                             yield StreamEvent(
