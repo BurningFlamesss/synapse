@@ -40,7 +40,7 @@ class ToolRegistry:
         return tools
     
     def get_schemas(self) -> list[dict[str, Any]]:
-        return [tool.to_ai_schema for tool in self.get_tools()]
+        return [tool.to_ai_schema() for tool in self.get_tools()]
     
     async def invoke(self, name: str, params: dict[str, Any], cwd: Path | None):
         tool = self.get(name)
@@ -64,7 +64,7 @@ class ToolRegistry:
             cwd=cwd
         )
         try:
-            await tool.execute(invocation)
+            return await tool.execute(invocation)
         except Exception as e:
             logger.exception(f"Tool {name} raised unexpected error: {e}")
             return ToolResult.error_result(
@@ -78,6 +78,6 @@ class ToolRegistry:
 def create_default_registry() -> ToolRegistry:
     registry = ToolRegistry()
     for tool_class in get_all_builtin_tools():
-        registry.register(tool_class)
+        registry.register(tool_class())
     
     return registry

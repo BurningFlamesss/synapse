@@ -23,7 +23,20 @@ class LLMClient:
             await self._client.close()
             self._client = None
             
-    async def chat_completion(self, messages: list[dict[str, Any]], stream: bool = True) -> AsyncGenerator[StreamEvent, None]:
+    def _build_tools(self, tools: list[dict[str, Any]]):
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool["name"],
+                    "description": tool.get("description", ""),
+                    "parameters": tool.get("parameters", { "type": "object", "properties": {} })
+                }
+            }
+            for tool in tools
+        ]
+            
+    async def chat_completion(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None, stream: bool = True) -> AsyncGenerator[StreamEvent, None]:
         for attempt in range(self._max_retries + 1):
             try:
                 client = self.get_client()
@@ -32,6 +45,11 @@ class LLMClient:
                     "messages": messages,
                     "stream": stream
                 }
+                
+                if tools:
+                    kwargs["tools"] = self._build_tools(tools)
+                    kwargs["tool_choice"] = "auto"
+                
                 if stream:
                     async for event in self._stream_response(client, kwargs):
                         yield event
@@ -95,6 +113,8 @@ class LLMClient:
                     type=StreamEventType.TEXT_DELTA,
                     text_delta=TextDelta(content=delta.content)
                 )
+                
+            print(delta.tool_calls)
 
         yield StreamEvent(
             type=StreamEventType.MESSAGE_COMPLETE,
