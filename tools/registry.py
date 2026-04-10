@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from tools.base import Tool, ToolInvocation, ToolResult
+from tools.built import ReadFileTool, get_all_builtin_tools
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +73,11 @@ class ToolRegistry:
                     "tool_name": name
                 }
             )
+            
+
+def create_default_registry() -> ToolRegistry:
+    registry = ToolRegistry()
+    for tool_class in get_all_builtin_tools():
+        registry.register(tool_class)
+    
+    return registry
