@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 
-from utils.paths import resolve_path
+from utils.paths import display_path_rel_to_cwd
 
 AGENT_THEME = Theme(
     {
@@ -108,7 +108,7 @@ class TUI:
         for key in ("path", "cwd"):
             val = display_args.get(key)
             if isinstance(val, str) and self.cwd:
-                display_args[key] = str(resolve_path(val, self.cwd))
+                display_args[key] = str(display_path_rel_to_cwd(val, self.cwd))
         
         panel = Panel(
             self._render_args_tab(name, display_args) if display_args else Text("(no args)", style="muted"),
