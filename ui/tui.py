@@ -1,3 +1,5 @@
+from typing import Any
+
 from rich.console import Console
 from rich.theme import Theme
 from rich.rule import Rule
@@ -40,6 +42,7 @@ class TUI:
     def __init__(self, console: Console | None = None) -> None:
         self.console = console or get_console()
         self._assistant_stream_open = False
+        self._tool_args_by_call_id: dict[str, dict[str, Any]] = {}
         
     def begin_assistant(self) -> None:
         self.console.print()
@@ -54,4 +57,5 @@ class TUI:
     def stream_assistant_delta(self, content: str) -> None:
         self.console.print(content, end="", markup=False)
         
-    
+    def tool_call_start(self, call_id: str, name: str, arguments: dict[str, Any]) -> None:
+        self._tool_args_by_call_id[call_id] = arguments

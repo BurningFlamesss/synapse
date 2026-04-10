@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+import json
 
 @dataclass
 class TextDelta:
@@ -68,15 +69,11 @@ class ToolResultMessage:
             "content": self.content
         }
     
-def parse_tool_call_arguments(arguments_str: str) -> dict[str, Any]:
-    import json
-    
-    if not arguments_str:
+def parse_tool_call_arguments(arguments_str: str) -> dict[str, Any]:   
+    if not arguments_str or not arguments_str.strip():
         return {}
-    
+
     try:
         return json.loads(arguments_str)
-    except json.JSONDecodeError:
-        return {
-            "raw_arguments": arguments_str
-        }
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid tool call JSON arguments: {arguments_str}") from e
