@@ -36,19 +36,19 @@ class LLMClient:
         ]
             
     async def chat_completion(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None, stream: bool = True) -> AsyncGenerator[StreamEvent, None]:
+        client = self.get_client()
+        kwargs = {
+            "model": "openai/gpt-oss-120b:free", # "openai/gpt-oss-120b:free",
+            "messages": messages,
+            "stream": stream
+        }
+        
+        if tools:
+            kwargs["tools"] = self._build_tools(tools)
+            kwargs["tool_choice"] = "auto"
+            
         for attempt in range(self._max_retries + 1):
             try:
-                client = self.get_client()
-                kwargs = {
-                    "model": "openai/gpt-oss-120b:free", # "openai/gpt-oss-120b:free",
-                    "messages": messages,
-                    "stream": stream
-                }
-                
-                if tools:
-                    kwargs["tools"] = self._build_tools(tools)
-                    kwargs["tool_choice"] = "auto"
-                
                 if stream:
                     async for event in self._stream_response(client, kwargs):
                         yield event
@@ -140,16 +140,16 @@ class LLMClient:
                                     )
                                 )
                             
-                            if tool_call_delta.function.arguments:
-                                tc["arguments"] += tool_call_delta.function.arguments
-                                yield StreamEvent(
-                                    type=StreamEventType.TOOL_CALL_DELTA,
-                                    tool_call_delta=ToolCallDelta(
-                                        call_id=tc["id"],
-                                        name=tc["name"],
-                                        arguments_delta=tool_call_delta.function.arguments
-                                    )
+                        if tool_call_delta.function.arguments:
+                            tc["arguments"] += tool_call_delta.function.arguments
+                            yield StreamEvent(
+                                type=StreamEventType.TOOL_CALL_DELTA,
+                                tool_call_delta=ToolCallDelta(
+                                    call_id=tc["id"],
+                                    name=tc["name"],
+                                    arguments_delta=tool_call_delta.function.arguments
                                 )
+                            )
                                 
         for idx, tc in tool_calls.items():
             parsed_args = parse_tool_call_arguments(tc["arguments"])

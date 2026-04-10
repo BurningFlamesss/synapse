@@ -1,15 +1,18 @@
 from pathlib import Path
+import re
 from typing import Any
 
-from rich.console import Console
+from rich.console import Console, Group
 from rich.theme import Theme
 from rich.rule import Rule
 from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
+from rich.syntax import Syntax
 from rich import box
 
 from utils.paths import display_path_rel_to_cwd
+from utils.text import truncate_text
 
 AGENT_THEME = Theme(
     {
@@ -115,6 +118,133 @@ class TUI:
             title=title,
             title_align="left",
             subtitle=Text("running", style="muted"),
+            subtitle_align="right",
+            border_style=border_style,
+            box=box.ROUNDED,
+            padding=(1,2)
+        )
+        
+        self.console.print()
+        self.console.print(panel)
+        self.console.print()
+        
+    def _extract_read_file_code(self, text: str) -> tuple[int, str] | None:
+        body = text
+        header_match = re.match(r"^Showing lines (\d+)-(\d+) of (\d+) \n\n", text)
+        if header_match:
+            body = text[header_match.end() :]
+            
+        code_lines: list[str] = []
+        start_lines: int | None = None
+        end_lines: int | None = None
+        
+        for line in body.splitlines():
+            m = re.match(r"^\s*(\d+)/|(.*)$", line)
+            if not m:
+                return None
+            line_no = int(m.group(1))
+            if start_lines is None:
+                start_lines = line_no
+            code_lines.append(m.group(2))
+            
+        if start_lines is None:
+            return None
+        
+        return start_lines, "\n".join(code_lines)
+    
+    def _guess_language(self, path: str | None) -> str:
+        if not path:
+            return "text"
+        suffix = Path(path).suffix.lower()
+        return {
+            ".py": "python",
+            ".js": "javascript",
+            ".jsx": "jsx",
+            ".ts": "typescript",
+            ".tsx": "tsx",
+            ".json": "json",
+            ".toml": "toml",
+            ".yaml": "yaml",
+            ".yml": "yaml",
+            ".md": "markdown",
+            ".sh": "bash",
+            ".bash": "bash",
+            ".zsh": "bash",
+            ".rs": "rust",
+            ".go": "go",
+            ".java": "java",
+            ".kt": "kotlin",
+            ".swift": "swift",
+            ".c": "c",
+            ".h": "c",
+            ".cpp": "cpp",
+            ".hpp": "cpp",
+            ".css": "css",
+            ".html": "html",
+            ".xml": "xml",
+            ".sql": "sql",
+        }.get(suffix, "text")
+        
+    def tool_call_complete(self, call_id: str, name: str, tool_kind: str | None, success: str, output: str, error: str | None, metadata: dict[str, Any] | None, truncated: bool) -> None:
+        border_style = f"tool.{tool_kind}" if tool_kind else "tool"
+        status_icon = "✓" if success else "X"
+        status_style = "success" if success else "error"
+        
+        title = Text.assemble(
+            (f"{status_icon} ", status_style),
+            (name, "tool"),
+            ("  ", "muted"),
+            (f"#{call_id[:8]}", "muted")
+        )
+        primary_path = None
+        blocks = []
+        if isinstance(metadata, dict) and isinstance(metadata.get("path"), str):
+            primary_path = metadata.get("path")
+        
+        if name == "read_files" and success:
+            if primary_path:
+                start_line, code = self._extract_read_file_code(output)
+                shown_start = metadata.get("shown_start")
+                shown_end = metadata.get("shown_end")
+                total_lines = metadata.get("total_lines")
+                pl = self._guess_language(primary_path)
+                
+                header_parts = [display_path_rel_to_cwd(primary_path, self.cwd)]
+                header_parts.append(" ⏺ ")
+                if shown_start and shown_end and total_lines:
+                    header_parts.append(f"lines {shown_start}-{shown_end} of {total_lines}")
+                    
+                header = "".join(header_parts)
+                blocks.append(Text(header, style="muted"))
+                blocks.append(Text("", style="muted"))
+                blocks.append(Syntax(
+                    code,
+                    pl,
+                    theme="monokai",
+                    line_numbers=True,
+                    start_line=start_line,
+                    word_wrap=False
+                ))
+            else:
+                output_display = truncate_text(output, "", 240)
+                blocks.append(
+                    Syntax(
+                        output_display,
+                        "text",
+                        line_numbers=True,
+                        theme="monokai",
+                        word_wrap=False
+                    )
+                )
+                
+        if truncated:
+            blocks.append(Text("Note: The code was truncated", style="warning"))
+        
+        panel = Panel(
+            Group(*blocks),
+            title=title,
+            title_align="left",
+            subtitle=Text("done" if success else "failed", style=status_style),
             subtitle_align="right",
             border_style=border_style,
             box=box.ROUNDED,
