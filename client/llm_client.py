@@ -149,15 +149,15 @@ class LLMClient:
                                     )
                                 )
                                 
-            for idx, tc in tool_calls.items():
-                yield StreamEvent(
-                    type=StreamEventType.TOOL_CALL_COMPLETE,
-                    tool_call=ToolCall(
-                        call_id=tc["id"],
-                        name=tc["name"],
-                        arguments=parse_tool_call_arguments(tc["arguments"])
-                    )
-                )                    
+        for idx, tc in tool_calls.items():
+            yield StreamEvent(
+                type=StreamEventType.TOOL_CALL_COMPLETE,
+                tool_call=ToolCall(
+                    call_id=tc["id"],
+                    name=tc["name"],
+                    arguments=parse_tool_call_arguments(tc["arguments"])
+                )
+            )                    
 
         yield StreamEvent(
             type=StreamEventType.MESSAGE_COMPLETE,
@@ -174,6 +174,17 @@ class LLMClient:
         if message.content:
             text_delta = TextDelta(content=message.content)
             
+        tool_calls: list[ToolCall] = []
+        if message.tool_calls:
+            for tc in message.tool_calls:
+                tool_calls.append(
+                    ToolCall(
+                        call_id=tc.id,
+                        name=tc.function.name,
+                        arguments=parse_tool_call_arguments(tc.function.arguments)
+                    )
+                )
+        
         usage = None
         if response.usage:
             usage = TokenUsage(
