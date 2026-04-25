@@ -34,6 +34,7 @@ class CLI:
             
             while True:
                 try:
+                    console.print()
                     user_input = console.input("[user]>[/user] ").strip()
                     if not user_input:
                         continue
