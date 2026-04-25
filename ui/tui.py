@@ -65,7 +65,6 @@ class TUI:
         self._assistant_stream_open = False
         
     def stream_assistant_delta(self, content: str) -> None:
-        self.console.print()
         self.console.print(content, end="", markup=False)
         
     def _ordered_args(self, tool_name: str, args: dict[str, Any]) -> list[tuple]:
@@ -267,3 +266,4 @@ class TUI:
         
         self.console.print()
         self.console.print(panel)
+        self.console.print()
