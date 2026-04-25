@@ -65,6 +65,7 @@ class TUI:
         self._assistant_stream_open = False
         
     def stream_assistant_delta(self, content: str) -> None:
+        self.console.print()
         self.console.print(content, end="", markup=False)
         
     def _ordered_args(self, tool_name: str, args: dict[str, Any]) -> list[tuple]:
@@ -126,7 +127,6 @@ class TUI:
         
         self.console.print()
         self.console.print(panel)
-        self.console.print()
         
     def _extract_read_file_code(self, text: str) -> tuple[int, str] | None:
         body = text
@@ -184,6 +184,20 @@ class TUI:
             ".xml": "xml",
             ".sql": "sql",
         }.get(suffix, "text")
+        
+    def print_welcome(self, title: str, lines: list[str]) -> None:
+        body = "\n".join(lines)
+        self.console.print()
+        self.console.print(
+            Panel(
+                Text(body, style="code"),
+                title=Text(title, style="highlight"),
+                title_align="left",
+                border_style="border",
+                box=box.ROUNDED,
+                padding=(1,2)
+            )
+        )
         
     def tool_call_complete(self, call_id: str, name: str, tool_kind: str | None, success: str, output: str, error: str | None, metadata: dict[str, Any] | None, truncated: bool) -> None:
         border_style = f"tool.{tool_kind}" if tool_kind else "tool"
@@ -253,4 +267,3 @@ class TUI:
         
         self.console.print()
         self.console.print(panel)
-        self.console.print()
