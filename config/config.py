@@ -23,4 +23,33 @@ class Config(BaseModel):
     def api_key(self) -> str | None:
         return os.environ.get("API_KEY")
     
+    @property
+    def base_url(self) -> str | None:
+        return os.environ.get("BASE_URL")
     
+    @property
+    def model_name(self) -> str:
+        return self.model.name
+    
+    @model_name.setter
+    def model_name(self, value: str) -> None:
+        self.model.name = value
+    
+    @property
+    def temperature(self) -> float:
+        return self.model.temperature
+    
+    @model_name.setter
+    def model_temperature(self, value: str) -> None:
+        self.model.temperature = value
+        
+    def validate(self) -> list[str]:
+        errors: list[str] = []
+        
+        if not self.api_key:
+            errors.append("No API Key Found. Set the API_KEY in env variable")
+            
+        if not self.cwd.exists():
+            errors.append(f"Working directory doesnot exist: {self.cwd}")
+            
+        return errors
