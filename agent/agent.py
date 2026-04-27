@@ -16,7 +16,7 @@ class Agent:
         self.client = LLMClient(
             config=self.config
         )
-        self.context_manager = ContextManager()
+        self.context_manager = ContextManager(config=config)
         self.tool_registry = create_default_registry()
         
     async def run(self, message: str):

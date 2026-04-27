@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 class ModelConfig(BaseModel):
-    name: str = "openai/gpt-oss-120b:free"
+    name: str = "openai/gpt-oss-120b:free" # "google/gemma-4-26b-a4b-it:free"
     temperature: float = Field(default=1, ge=0.0, le=2.0)
     context_window: int | None = None
 

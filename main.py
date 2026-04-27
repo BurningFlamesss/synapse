@@ -27,7 +27,7 @@ class CLI:
         self.tui.print_welcome(
             "Synapse",
             lines=[
-                f"model: something",
+                f"model: {self.config.model_name}",
                 f"cwd: {Path.cwd()}",
                 f"commands: /help /config /approval /model /exit"
             ]
