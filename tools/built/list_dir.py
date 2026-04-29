@@ -47,6 +47,6 @@ class ListDirTool(Tool):
             "\n".join(lines),
             metadata={
                 "path": str(dir_path),
-                "entries": 0
+                "entries": len(items)
             }
         )
