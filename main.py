@@ -67,47 +67,59 @@ class CLI:
         assistant_streaming = False
         final_response: str | None = None
         
-        async for event in self.agent.run(message):
-            if event.type == AgentEventType.TEXT_DELTA:
-                content = event.data.get("content", "")
-                if not assistant_streaming:
-                    self.tui.begin_assistant()
-                    assistant_streaming = True
-                self.tui.stream_assistant_delta(content)
+        self.tui.start_loading()
+        
+        try:
+            async for event in self.agent.run(message):
                 
-            elif event.type == AgentEventType.TEXT_COMPLETE:
-                final_response = event.data.get("content")
-                if assistant_streaming:
-                    self.tui.end_assistant()
-                    assistant_streaming = False
+                if event.type == AgentEventType.TEXT_DELTA:
+                    content = event.data.get("content", "")
                     
-            elif event.type == AgentEventType.AGENT_ERROR:
-                error = event.data.get("error", "Unknown error")
-                console.print(f"\n[error]Error: {error}[/error]")
-                
-            elif event.type == AgentEventType.TOOL_CALL_START:
-                tool_name = event.data.get("name", "unknown")
-                tool_kind = self._get_tool_kind(tool_name)
-                self.tui.tool_call_start(
-                    event.data.get("call_id", ""),
-                    tool_name,
-                    tool_kind,
-                    event.data.get("arguments", {})
-                )
-            
-            elif event.type == AgentEventType.TOOL_CALL_COMPLETE:
-                tool_name = event.data.get("name", "unknown")
-                tool_kind = self._get_tool_kind(tool_name)
-                self.tui.tool_call_complete(
-                    event.data.get("call_id", ""),
-                    tool_name,
-                    tool_kind,
-                    event.data.get("success", False),
-                    event.data.get("output", ""),
-                    event.data.get("error"),
-                    event.data.get("metadata"),
-                    event.data.get("truncated", ""),
-                )
+                    if not assistant_streaming:
+                        self.tui.begin_assistant()
+                        assistant_streaming = True
+                        
+                    self.tui.stream_assistant_delta(content)
+                    
+                elif event.type == AgentEventType.TEXT_COMPLETE:
+                    final_response = event.data.get("content")
+                    
+                    if assistant_streaming:
+                        self.tui.end_assistant()
+                        assistant_streaming = False
+                        
+                elif event.type == AgentEventType.AGENT_ERROR:
+                    error = event.data.get("error", "Unknown error")
+                    console.print(f"\n[error]Error: {error}[/error]")
+                    
+                elif event.type == AgentEventType.TOOL_CALL_START:
+                    tool_name = event.data.get("name", "unknown")
+                    tool_kind = self._get_tool_kind(tool_name)
+                    self.tui.tool_call_start(
+                        event.data.get("call_id", ""),
+                        tool_name,
+                        tool_kind,
+                        event.data.get("arguments", {}),
+                    )
+                    
+                elif event.type == AgentEventType.TOOL_CALL_COMPLETE:
+                    tool_name = event.data.get("name", "unknown")
+                    tool_kind = self._get_tool_kind(tool_name)
+                    self.tui.tool_call_complete(
+                        event.data.get("call_id", ""),
+                        tool_name,
+                        tool_kind,
+                        event.data.get("success", False),
+                        event.data.get("output", ""),
+                        event.data.get("error"),
+                        event.data.get("metadata"),
+                        event.data.get("diff"),
+                        event.data.get("truncated", False),
+                        event.data.get("exit_code"),
+                    )
+                    
+        finally:
+            self.tui.stop_loading()
 
         return final_response
 

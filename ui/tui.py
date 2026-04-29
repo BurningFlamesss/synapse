@@ -55,28 +55,33 @@ def get_console() -> Console:
 class TUI:
     def __init__(self, config: Config, console: Console | None = None) -> None:
         self.console = console or get_console()
-        self.config = config
         self._assistant_stream_open = False
         self._assistant_buffer: list[str] = []
         self._tool_args_by_call_id: dict[str, dict[str, Any]] = {}
+        self.config = config
         self.cwd = self.config.cwd
-        self.max_block_tokens = 2500
+        self._max_block_tokens = 2500
         self._pet_profiles = [
             {
-                "name": "Sunsun",
-                "frames": ["(=^.^=)", "(=^o^=)", "(=^.^=)"]
+                "name": "Sursur",
+                "frames": ["(=^.^=)", "(=^o^=)", "(=^.^=)"],
             },
             {
                 "name": "Ramama",
-                "frames": ["(=^.^=)", "(=^_^=)", "(=^.^=)"]
+                "frames": ["(=^.^=)", "(=^_^=)", "(=^.^=)"],
             },
             {
-                "name": "Sursur",
-                "frames": ["(=^.^=)", "(=^x^=)", "(=^.^=)"]
+                "name": "Sunsun",
+                "frames": ["(=^.^=)", "(=^x^=)", "(=^.^=)"],
             },
         ]
         self._loading_phrases = [
-            "Thinking", "Planning", "Working"
+            "Thinking",
+            "Planning",
+            "Scanning",
+            "Working",
+            "Checking",
+            "Finalizing",
         ]
         self._active_pet = random.choice(self._pet_profiles)
         self._pet_frame_index = 0
@@ -87,64 +92,102 @@ class TUI:
         
     def begin_assistant(self) -> None:
         self.console.print()
-        self.console.print(Rule(Text("Assistant", style="assistant"), style="border", characters="-"))
+        self.console.print(
+            Rule(
+                Text("Assistant", style="assistant"),
+                style="border",
+                characters="-",
+            )
+        )
         self._assistant_stream_open = True
         self._assistant_buffer = []
-        
+
     def end_assistant(self) -> None:
         if self._assistant_stream_open:
             content = "".join(self._assistant_buffer).strip()
             if content:
-                panel = Panel(Markdown(content, code_theme="monokai"), border_style="border", box=box.ROUNDED, padding=(1,2))
+                panel = Panel(
+                    Markdown(content, code_theme="monokai"),
+                    border_style="border",
+                    box=box.ROUNDED,
+                    padding=(1, 2),
+                )
                 self.console.print(panel)
             else:
                 self.console.print()
         self._assistant_stream_open = False
-        
+
     def stream_assistant_delta(self, content: str) -> None:
         if content:
             self._assistant_buffer.append(content)
-            # self.console.print(content, end="", markup=False)
-            
+
     def _current_pet_frame(self) -> str:
         frames = self._active_pet["frames"]
         return frames[self._pet_frame_index % len(frames)]
-    
+
     def _pet_status_text(self, status: str) -> Text:
         name = self._active_pet["name"]
         frame = self._current_pet_frame()
         return Text(f"{status}  {frame} {name}", style="muted")
-    
+
     def start_loading(self) -> None:
-        if self._loading_live: 
+        if self._loading_live:
             return
 
         self._active_pet = random.choice(self._pet_profiles)
         self._pet_frame_index = 0
         self._loading_phrase_index = 0
         self._loading_stop.clear()
-        
+
         self._loading_live = Live(
             Panel(
                 self._loading_text(),
                 border_style="border",
                 box=box.ROUNDED,
-                padding=(0, 2)
+                padding=(0, 2),
             ),
             console=self.console,
             refresh_per_second=6,
-            transient=True
+            transient=True,
         )
         self._loading_live.start()
-        
+
         def _run() -> None:
-            pass
-        
+            tick = 0
+            while not self._loading_stop.is_set():
+                time.sleep(0.25)
+                tick += 1
+                self._pet_frame_index += 1
+                if tick % 4 == 0:
+                    self._loading_phrase_index += 1
+                if self._loading_live:
+                    self._loading_live.update(
+                        Panel(
+                            self._loading_text(),
+                            border_style="border",
+                            box=box.ROUNDED,
+                            padding=(0, 2),
+                        )
+                    )
+
+        self._loading_thread = threading.Thread(target=_run, daemon=True)
+        self._loading_thread.start()
+
     def stop_loading(self) -> None:
-        pass
-    
+        if not self._loading_live:
+            return
+
+        self._loading_stop.set()
+        if self._loading_thread and self._loading_thread.is_alive():
+            self._loading_thread.join(timeout=0.5)
+        self._loading_live.stop()
+        self._loading_live = None
+        self._loading_thread = None
+
     def _loading_text(self) -> Text:
-        phrase = self._loading_phrases[self._loading_phrase_index % len(self._loading_phrases)]
+        phrase = self._loading_phrases[
+            self._loading_phrase_index % len(self._loading_phrases)
+        ]
         frame = self._current_pet_frame()
         name = self._active_pet["name"]
         return Text(f"{phrase}...  {frame} {name}", style="muted")
@@ -199,7 +242,7 @@ class TUI:
             self._render_args_tab(name, display_args) if display_args else Text("(no args)", style="muted"),
             title=title,
             title_align="left",
-            subtitle=Text("running", style="muted"),
+            subtitle=self._pet_status_text("running"),
             subtitle_align="right",
             border_style=border_style,
             box=box.ROUNDED,
@@ -268,11 +311,16 @@ class TUI:
         
     def print_welcome(self, title: str, lines: list[str]) -> None:
         body = "\n".join(lines)
+        header = Text.assemble(
+            ("Synapse", "highlight"),
+            ("   ", "muted"),
+            ("ready", "accent"),
+        )
         self.console.print()
         self.console.print(
             Panel(
                 Text(body, style="code"),
-                title=Text(title, style="highlight"),
+                title=header,
                 title_align="left",
                 border_style="border",
                 box=box.ROUNDED,
@@ -339,7 +387,7 @@ class TUI:
             Group(*blocks),
             title=title,
             title_align="left",
-            subtitle=Text("done" if success else "failed", style=status_style),
+            subtitle=Text(f"{"done" if success else "failed"}  {self._current_pet_frame()} {self._active_pet["name"]}", spans=status_style),
             subtitle_align="right",
             border_style=border_style,
             box=box.ROUNDED,
