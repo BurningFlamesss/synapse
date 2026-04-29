@@ -79,9 +79,6 @@ class TUI:
             "Thinking",
             "Planning",
             "Scanning",
-            "Working",
-            "Checking",
-            "Finalizing",
         ]
         self._active_pet = random.choice(self._pet_profiles)
         self._pet_frame_index = 0
