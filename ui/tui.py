@@ -197,7 +197,8 @@ class TUI:
             "read_file": ["path", "offset", "limit"],
             "write_file": ["path", "create_directories", "content"],
             "edit": ["path", "replace_all", "old_string", "new_string"],
-            "shell": ["command", "timeout", "cwd"]
+            "shell": ["command", "timeout", "cwd"],
+            "list_dir": ["path", "include_hidden"]
         }
         
         preferred = _PREFERRED_ORDER.get(tool_name, [])
