@@ -195,11 +195,12 @@ class TUI:
     def _ordered_args(self, tool_name: str, args: dict[str, Any]) -> list[tuple]:
         _PREFERRED_ORDER = {
             "read_file": ["path", "offset", "limit"],
-            "write_file": ["path", "create_directories", "content"]
+            "write_file": ["path", "create_directories", "content"],
+            "edit": ["path", "replace_all", "old_string", "new_string"]
         }
         
         preferred = _PREFERRED_ORDER.get(tool_name, [])
-        ordered: list[tuple[str, Any]] = []
+        ordered: list[tuple[str, Any]] = [] 
         seen = set()
         
         for key in preferred:
