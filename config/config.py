@@ -7,6 +7,11 @@ class ModelConfig(BaseModel):
     name: str = "openai/gpt-oss-120b:free" # "google/gemma-4-26b-a4b-it:free"
     temperature: float = Field(default=1, ge=0.0, le=2.0)
     context_window: int | None = None
+    
+class ShellEnvironmentPolicy(BaseModel):
+    ignore_default_excludes: bool = False
+    exclude_patterns: list[str] = Field(default_factory=lambda: ['*KEY*', '*TOKEN*', '*SECRET*'])
+    set_vars: dict[str, str] = Field(default_factory=dict)
 
 class Config(BaseModel):
     model: ModelConfig = Field(default_factory=ModelConfig)
@@ -18,6 +23,7 @@ class Config(BaseModel):
     user_instructions: str | None = None
     
     debug: bool = False
+    shell_environment: ShellEnvironmentPolicy = Field(default_factory=ShellEnvironmentPolicy)
     
     @property
     def api_key(self) -> str | None:
