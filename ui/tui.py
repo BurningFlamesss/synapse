@@ -9,35 +9,39 @@ from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
 from rich.syntax import Syntax
+from rich.markdown import Markdown
 from rich import box
-
+from rich.live import Live
 from config.config import Config
 from utils.paths import display_path_rel_to_cwd
 from utils.text import truncate_text
+import random
+import threading
+import time
 
 AGENT_THEME = Theme(
     {
-        "info": "blue",
+        "info": "bright_cyan",
         "warning": "yellow",
         "error": "red bold",
-        "success": "green",
-        "dim": "dim",
-        "muted": "grey50",
-        "border": "grey35",
-        "highlight": "blue bold",
-        "user": "bright_blue bold",
+        "success": "bright_green",
+        "dim": "grey50",
+        "muted": "grey62",
+        "border": "grey27",
+        "highlight": "bold bright_white",
+        "accent": "bright_cyan",
+        "user": "bright_white bold",
         "assistant": "bright_white",
-        "tool": "magenta bold",
-        "tool.read": "blue",
-        "tool.write": "yellow",
-        "tool.shell": "magenta",
-        "tool.network": "blue",
-        "tool.memory": "green",
-        "tool.mcp": "bright_blue",
+        "tool": "bright_cyan bold",
+        "tool.read": "bright_cyan",
+        "tool.write": "bright_yellow",
+        "tool.shell": "bright_magenta",
+        "tool.network": "bright_blue",
+        "tool.memory": "bright_green",
+        "tool.mcp": "bright_cyan",
         "code": "white"
     }
 )
-
 
 _console: Console | None = None
 
@@ -53,21 +57,97 @@ class TUI:
         self.console = console or get_console()
         self.config = config
         self._assistant_stream_open = False
+        self._assistant_buffer: list[str] = []
         self._tool_args_by_call_id: dict[str, dict[str, Any]] = {}
         self.cwd = self.config.cwd
+        self.max_block_tokens = 2500
+        self._pet_profiles = [
+            {
+                "name": "Sunsun",
+                "frames": ["(=^.^=)", "(=^o^=)", "(=^.^=)"]
+            },
+            {
+                "name": "Ramama",
+                "frames": ["(=^.^=)", "(=^_^=)", "(=^.^=)"]
+            },
+            {
+                "name": "Sursur",
+                "frames": ["(=^.^=)", "(=^x^=)", "(=^.^=)"]
+            },
+        ]
+        self._loading_phrases = [
+            "Thinking", "Planning", "Working"
+        ]
+        self._active_pet = random.choice(self._pet_profiles)
+        self._pet_frame_index = 0
+        self._loading_live: Live | None = None
+        self._loading_thread: threading.Thread | None = None
+        self._loading_stop = threading.Event()
+        self._loading_phrase_index = 0
         
     def begin_assistant(self) -> None:
         self.console.print()
-        self.console.print(Rule(Text("Assistant", style="assistant")))
+        self.console.print(Rule(Text("Assistant", style="assistant"), style="border", characters="-"))
         self._assistant_stream_open = True
+        self._assistant_buffer = []
         
     def end_assistant(self) -> None:
         if self._assistant_stream_open:
-            self.console.print()
+            content = "".join(self._assistant_buffer).strip()
+            if content:
+                panel = Panel(Markdown(content, code_theme="monokai"), border_style="border", box=box.ROUNDED, padding=(1,2))
+                self.console.print(panel)
+            else:
+                self.console.print()
         self._assistant_stream_open = False
         
     def stream_assistant_delta(self, content: str) -> None:
-        self.console.print(content, end="", markup=False)
+        if content:
+            self._assistant_buffer.append(content)
+            # self.console.print(content, end="", markup=False)
+            
+    def _current_pet_frame(self) -> str:
+        frames = self._active_pet["frames"]
+        return frames[self._pet_frame_index % len(frames)]
+    
+    def _pet_status_text(self, status: str) -> Text:
+        name = self._active_pet["name"]
+        frame = self._current_pet_frame()
+        return Text(f"{status}  {frame} {name}", style="muted")
+    
+    def start_loading(self) -> None:
+        if self._loading_live: 
+            return
+
+        self._active_pet = random.choice(self._pet_profiles)
+        self._pet_frame_index = 0
+        self._loading_phrase_index = 0
+        self._loading_stop.clear()
+        
+        self._loading_live = Live(
+            Panel(
+                self._loading_text(),
+                border_style="border",
+                box=box.ROUNDED,
+                padding=(0, 2)
+            ),
+            console=self.console,
+            refresh_per_second=6,
+            transient=True
+        )
+        self._loading_live.start()
+        
+        def _run() -> None:
+            pass
+        
+    def stop_loading(self) -> None:
+        pass
+    
+    def _loading_text(self) -> Text:
+        phrase = self._loading_phrases[self._loading_phrase_index % len(self._loading_phrases)]
+        frame = self._current_pet_frame()
+        name = self._active_pet["name"]
+        return Text(f"{phrase}...  {frame} {name}", style="muted")
         
     def _ordered_args(self, tool_name: str, args: dict[str, Any]) -> list[tuple]:
         _PREFERRED_ORDER = {
