@@ -1,9 +1,0 @@
-automations:
-  start-agent:
-    description: "Start the terminal Synapse Agent"
-    triggeredBy:
-      - postEnvironmentStart
-    command: |
-      export API_KEY="${API_KEY}"
-      export BASE_URL="https://openrouter.ai/api/v1"
-      python main.py

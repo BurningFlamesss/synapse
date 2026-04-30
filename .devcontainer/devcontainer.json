@@ -1,10 +1,14 @@
 {
     "name": "Synapse",
-    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "postCreateCommand": "pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli",
+    "postStartCommand": "bash start.sh",
+    "remoteEnv": {
+        "BASE_URL": "https://openrouter.ai/api/v1"
+    },
     "customizations": {
         "vscode": {
-            "extensions": ["ms-python.python"]
+        "extensions": ["ms-python.python"]
         }
     }
 }
