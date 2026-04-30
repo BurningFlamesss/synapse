@@ -5,6 +5,7 @@ import uuid
 from client.llm_client import LLMClient
 from config.config import Config
 from config.loader import get_data_dir
+from context.compaction import ChatCompactor
 from context.manager import ContextManager
 from tools.discovery import ToolDiscoveryManager
 from tools.mcp.mcp_manager import MCPManager
@@ -21,6 +22,7 @@ class Session:
         self.tool_registry = create_default_registry(config)
         self.discovery_manager = ToolDiscoveryManager(self.config, self.tool_registry)
         self.mcp_manager = MCPManager(self.config)
+        self.chat_compactor = ChatCompactor(self.client)
         self.session_id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.updated_at = datetime.now()

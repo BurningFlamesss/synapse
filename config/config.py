@@ -7,9 +7,9 @@ from typing import Any
 from pydantic import BaseModel, Field, model_validator
 
 class ModelConfig(BaseModel):
-    name: str = "openai/gpt-oss-120b:free" # "google/gemma-4-26b-a4b-it:free"
+    name: str = "tencent/hy3-preview:free" # "openai/gpt-oss-120b:free"
     temperature: float = Field(default=1, ge=0.0, le=2.0)
-    context_window: int | None = None
+    context_window: int | None = 128_000
     
 class ShellEnvironmentPolicy(BaseModel):
     ignore_default_excludes: bool = False
