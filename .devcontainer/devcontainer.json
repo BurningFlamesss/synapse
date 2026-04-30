@@ -1,0 +1,10 @@
+{
+    "name": "Synapse",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    "postCreateCommand": "pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python"]
+        }
+    }
+}
