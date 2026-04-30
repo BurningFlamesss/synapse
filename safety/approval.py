@@ -144,7 +144,7 @@ class ApprovalManager:
             return ApprovalDecision.NEEDS_CONFIRMATION
 
         if self.approval_policy == ApprovalPolicy.ON_REQUEST:
-            return ApprovalDecision.NEEDS_CONFIRMATION
+            return ApprovalDecision.APPROVED # CHANGE IF NECESSARY, it will auto approve all the request if they donot lie under dangerous
 
         return ApprovalDecision.APPROVED
 
