@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Callable
 
 from agent.events import AgentEvent, AgentEventType
 from agent.session import Session
@@ -8,13 +8,16 @@ from client.llm_client import LLMClient
 from client.response import StreamEventType, TokenUsage, ToolCall, ToolResultMessage
 from config.config import Config
 from context.manager import ContextManager
+from tools.base import ToolConfirmation
 from tools.registry import create_default_registry
 
 
 class Agent:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, confirmation_callback: Callable[[ToolConfirmation], bool] | None = None):
         self.config = config
         self.session: Session | None = Session(config)
+        self.confirmation_callback = confirmation_callback
+        self.session.approval_manager.confirmation_callback = self.confirmation_callback
         
     async def run(self, message: str):
         yield AgentEvent.agent_start(message)
@@ -100,7 +103,8 @@ class Agent:
                 result = await self.session.tool_registry.invoke(
                     tool_call.name,
                     tool_call.arguments,
-                    self.config.cwd
+                    self.config.cwd,
+                    self.session.approval_manager
                 )
                 
                 yield AgentEvent.tool_call_complete(

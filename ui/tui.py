@@ -13,6 +13,7 @@ from rich.markdown import Markdown
 from rich import box
 from rich.live import Live
 from config.config import Config
+from tools.base import ToolConfirmation
 from utils.paths import display_path_rel_to_cwd
 from utils.text import truncate_text
 import random
@@ -228,7 +229,7 @@ class TUI:
                     byte_count = len(value.encode("utf-8", errors="replace"))
                     value = f"<{line_count} lines • {byte_count} bytes>"
 
-            if isinstance(value, bool):
+            if not isinstance(value, str):
                 value = str(value)
 
             table.add_row(key, value)
@@ -655,3 +656,56 @@ class TUI:
         self.console.print()
         self.console.print(panel)
         self.console.print()
+        
+        
+        
+    def handle_confirmation(self, confirmation: ToolConfirmation) -> bool:
+        was_loading = self._loading_live is not None
+        if was_loading:
+            self.stop_loading()
+
+        output = [
+            Text(confirmation.tool_name, style="tool"),
+            Text(confirmation.description, style="code"),
+        ]
+
+        if confirmation.command:
+            output.append(Text(f"$ {confirmation.command}", style="warning"))
+
+        if confirmation.diff:
+            diff_text = confirmation.diff.to_diff()
+            output.append(
+                Syntax(
+                    diff_text,
+                    "diff",
+                    theme="monokai",
+                    word_wrap=True,
+                )
+            )
+
+        self.console.print()
+        self.console.print(
+            Panel(
+                Group(*output),
+                title=Text("Approval required", style="warning"),
+                title_align="left",
+                border_style="warning",
+                box=box.ROUNDED,
+                padding=(1, 2),
+            )
+        )
+        self.console.print(
+            Text("Type 'y' or 'yes' to approve, 'n' or 'no' to reject.", style="muted")
+        )
+
+        try:
+            while True:
+                response = self.console.input("\n[warning]Approve? [y/n][/warning] ").strip().lower()
+                if response in {"y", "yes"}:
+                    return True
+                if response in {"n", "no"}:
+                    return False
+                self.console.print("[warning]Please enter y/yes or n/no.[/warning]")
+        finally:
+            if was_loading:
+                self.start_loading()

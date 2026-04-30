@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 import os
 from pathlib import Path
 from typing import Any
@@ -7,7 +8,7 @@ from typing import Any
 from pydantic import BaseModel, Field, model_validator
 
 class ModelConfig(BaseModel):
-    name: str = "tencent/hy3-preview:free" # "openai/gpt-oss-120b:free"
+    name: str = "openai/gpt-oss-120b:free" # "tencent/hy3-preview:free" 
     temperature: float = Field(default=1, ge=0.0, le=2.0)
     context_window: int | None = 128_000
     
@@ -43,6 +44,13 @@ class MCPServerConfig(BaseModel):
             
         return self
     
+class ApprovalPolicy(str, Enum):
+    ON_REQUEST = "on_request",
+    ON_FAILURE = "on_failure",
+    AUTO = "auto"
+    AUTO_EDIT = "auto_edit"
+    NEVER = "never"
+    YOLO = "yolo"
 
 class Config(BaseModel):
     
@@ -58,6 +66,7 @@ class Config(BaseModel):
     
     debug: bool = False
     shell_environment: ShellEnvironmentPolicy = Field(default_factory=ShellEnvironmentPolicy)
+    approval: ApprovalPolicy = ApprovalPolicy.ON_REQUEST
     
     
     @property
