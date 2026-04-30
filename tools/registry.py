@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from config.config import Config
+from hooks.hook_system import HookSystem
 from safety.approval import ApprovalContext, ApprovalDecision, ApprovalManager
 from tools.base import Tool, ToolInvocation, ToolResult
 from tools.built import ReadFileTool, get_all_builtin_tools
@@ -62,23 +63,34 @@ class ToolRegistry:
     def get_schemas(self) -> list[dict[str, Any]]:
         return [tool.to_ai_schema() for tool in self.get_tools()]
     
-    async def invoke(self, name: str, params: dict[str, Any], cwd: Path, approval_manager: ApprovalManager | None = None) -> ToolResult:
+    async def invoke(self, name: str, params: dict[str, Any], cwd: Path, hook_system: HookSystem, approval_manager: ApprovalManager | None = None) -> ToolResult:
         tool = self.get(name)
         
         if tool is None:
-            return ToolResult.error_result(
+            result = ToolResult.error_result(
                 f"Unknown tool: {name}", 
                 metadata={"tool_name": name}
             )
             
+            await hook_system.trigger_after_tool(name, params, result)
+            
+            return result
+            
         validation_errors = tool.validate_params(params)
         
         if validation_errors:
-            return ToolResult.error_result(
+            result = ToolResult.error_result(
                 f"Invalid parameters: {"; ".join(validation_errors)}",
                 metadata={"tool_name": name, "validation_errors": validation_errors}
             )
             
+            await hook_system.trigger_after_tool(name, params, result)
+            
+            return result
+            
+            
+        await hook_system.trigger_before_tool(name, params)
+        
         invocation = ToolInvocation(
             params=params,
             cwd=cwd
@@ -92,14 +104,20 @@ class ToolRegistry:
                 decision = await approval_manager.check_approval(context)
                 
                 if decision == ApprovalDecision.REJECTED:
-                    return ToolResult.error_result("Operation rejected due to safety policy")
+                    result = ToolResult.error_result("Operation rejected due to safety policy")
+                    
+                    await hook_system.trigger_after_tool(name, params, result)
+                    
+                    return result
                 
                 elif decision == ApprovalDecision.NEEDS_CONFIRMATION:
                     approved = approval_manager.request_confirmation(confirmation)
                     
                     if not approved:
-                        return ToolResult.error_result("User rejected the operation")
+                        result = ToolResult.error_result("User rejected the operation")
+                        await hook_system.trigger_after_tool(name, params, result)
                         
+                        return result
         
         try:
             result = await tool.execute(invocation)
@@ -111,6 +129,8 @@ class ToolRegistry:
                     "tool_name": name
                 }
             )
+            
+        await hook_system.trigger_after_tool(name, params, result)
         return result
 
 

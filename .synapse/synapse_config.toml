@@ -1,5 +1,17 @@
+hooks_enabled=true
+
 [model]
 temperature = 0
+
+[[hooks]]
+name="hooks_log"
+trigger="before_tool"
+command="python ./scripts/hooks_log.py"
+
+[[hooks]]
+name="hooks_log"
+trigger="before_agent"
+command="python ./scripts/hooks_log.py"
 
 [mcp_servers.filesystem]
 command = "npx"
