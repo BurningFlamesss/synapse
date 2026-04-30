@@ -8,6 +8,7 @@ from client.llm_client import LLMClient
 from client.response import StreamEventType, TokenUsage, ToolCall, ToolResultMessage
 from config.config import Config
 from context.manager import ContextManager
+from prompts.system import create_loop_breaker_prompt
 from tools.base import ToolConfirmation
 from tools.registry import create_default_registry
 
@@ -84,6 +85,7 @@ class Agent:
             )
             if response_text:
                 yield AgentEvent.text_complete(response_text)
+                self.session.loop_detector.record_action("response", text=response_text)
                 
             if not tool_calls:
                 if usage:
@@ -102,6 +104,9 @@ class Agent:
                     tool_call.name,
                     tool_call.arguments
                 )
+                
+                self.session.loop_detector.record_action("tool", tool_name=tool_call.name, args=tool_call.arguments)
+                
                 
                 result = await self.session.tool_registry.invoke(
                     tool_call.name,
@@ -130,6 +135,12 @@ class Agent:
                     tool_result.tool_call_id,
                     tool_result.content
                 )
+                
+            loop_detection_error = self.session.loop_detector.check_for_loop()
+            
+            if loop_detection_error:
+                loop_prompt = create_loop_breaker_prompt(loop_detection_error)
+                self.session.context_manager.add_user_message(loop_prompt)
                 
             if usage:
                 self.session.context_manager.set_latest_usage(usage)
