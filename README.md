@@ -2,6 +2,32 @@
 
 Synapse is an AI agent that can execute tasks using tools and manage conversations. It is feature packed with streaming, multi-turn conversations, configurability, and is equipped with built-in tools for operating files, directory operations, text searching, shell executions, web access, memory layer and todo manager, All with insanely optimized context management, safety first approach, session management, MCP integrations, subagents and a minimalistic Terminal User Interface Design Choice.
 
+## Setup
+
+
+#### 1. Make Sure that you have python 3 or higher installed
+```bash
+pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli
+```
+#### 2. (Please if none of these works for you, consider asking to an AI. Sorry for inconvience)
+```bash
+# In mac
+export API_KEY="YOUR_OPENROUTER_API_KEY" && export BASE_URL="https://openrouter.ai/api/v1"
+
+# In Windows
+$env:API_KEY="YOUR_OPENROUTER_API_KEY" && $env:BASE_URL="https://openrouter.ai/api/v1"
+```
+
+#### 3. You might need to go through .synapse/synapse_config.toml and change filesystem MCP
+
+#### 4. Run the file
+```bash
+python main.py
+```
+
+#### 5. Now It's ready to be used.
+
+
 ## Tools
 - read_file
 - write_file
