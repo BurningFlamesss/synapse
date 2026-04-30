@@ -1,0 +1,14 @@
+image: gitpod/workspace-python-3.11
+
+tasks:
+  - name: Setup & Run AI Agent
+    init: |
+      pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli
+    command: |
+      export API_KEY="${API_KEY}"
+      export BASE_URL="https://openrouter.ai/api/v1"
+      python main.py
+
+vscode:
+  extensions:
+    - ms-python.python
