@@ -2,7 +2,14 @@
 
 Synapse is an AI agent that can execute tasks using tools and manage conversations. It is feature packed with streaming, multi-turn conversations, configurability, and is equipped with built-in tools for operating files, directory operations, text searching, shell executions, web access, memory layer and todo manager, All with insanely optimized context management, safety first approach, session management, MCP integrations, subagents and a minimalistic Terminal User Interface Design Choice.
 
+Synapse is terminal agentic tool which cannot be rendered in web thus, it doesnot have a public testing url. You have to work a little bit to get it running. Sorry for that :(
+
 ## Setup
+
+#### 1. Run `bash start.sh` if using in codespace if necessary.
+
+
+OR
 
 
 #### 1. Make Sure that you have python 3 or higher installed
