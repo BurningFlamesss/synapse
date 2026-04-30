@@ -107,7 +107,6 @@ class Agent:
                 
                 self.session.loop_detector.record_action("tool", tool_name=tool_call.name, args=tool_call.arguments)
                 
-                
                 result = await self.session.tool_registry.invoke(
                     tool_call.name,
                     tool_call.arguments,
@@ -129,6 +128,16 @@ class Agent:
                         is_error=not result.success
                     )
                 )
+                if (
+                    result.success
+                    and result.diff
+                    and tool_call.name in {"write_file", "edit"}
+                ):
+                    self.session.undo_manager.record(
+                            result.diff,
+                            tool_call.name,
+                            result.metadata,
+                        )
             
             for tool_result in tool_call_results:
                 self.session.context_manager.add_tool_result(

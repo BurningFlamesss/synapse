@@ -211,6 +211,13 @@ class CLI:
                     f"  • {server['name']}: [{status_color}]{status}[/{status_color}] ({server['tools']} tools)"
                 )
                 
+        elif cmd_name == "/undo":
+            success, message = self.agent.session.undo_manager.undo_last()
+            if success:
+                console.print(f"[success]{message}[/success]")
+            else:
+                console.print(f"[error]{message}[/error]")
+                
         elif cmd_name == "/save":
             persistence_manager = PersistenceManager()
             session_snapshot = SessionSnapshot(
