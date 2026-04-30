@@ -7,6 +7,7 @@ from config.config import Config
 from config.loader import get_data_dir
 from context.manager import ContextManager
 from tools.discovery import ToolDiscoveryManager
+from tools.mcp.mcp_manager import MCPManager
 from tools.registry import create_default_registry
 
 
@@ -19,17 +20,15 @@ class Session:
         self.context_manager: ContextManager | None = None 
         self.tool_registry = create_default_registry(config)
         self.discovery_manager = ToolDiscoveryManager(self.config, self.tool_registry)
-        # self.mcp_manager = MCPManager(self.config)
+        self.mcp_manager = MCPManager(self.config)
         self.session_id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
-        # self.mcp_manager.initialize()
-        self.discovery_manager.discover_all()
         self._turn_count = 0
         
     async def initialize(self) -> None:
-        # await self.mcp_manager.initialize()
-        # self.mcp_manager.register_tools(self.tool_registry)
+        await self.mcp_manager.initialize()
+        self.mcp_manager.register_tools(self.tool_registry)
 
         self.discovery_manager.discover_all()
         self.context_manager = ContextManager(
