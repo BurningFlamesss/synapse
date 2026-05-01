@@ -131,3 +131,10 @@ _(Extendable by adding more on tools/subagents.py)_
 ## Disclaimer / Reviewers
 
 This project might have some bugs which I hadnot yet noticed so if you found any, please email me at <a href="mailto:burningggflamesss@gmail.com">CLICK HERE</a>.
+
+
+## Credits
+
+- In the PACKAGES.md, I had listed the packages, I used for this.
+- system.py prompts were copied from Rivaan.
+- From the claude code leak, I utilized some of the code to build logic in the app
