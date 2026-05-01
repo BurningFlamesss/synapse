@@ -2,21 +2,13 @@
   "name": "AI Agent",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "postCreateCommand": "pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli",
+  "postStartCommand": "python main.py",
   "remoteEnv": {
     "BASE_URL": "https://openrouter.ai/api/v1"
   },
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python"],
-      "settings": {
-        "terminal.integrated.profiles.linux": {
-          "agent": {
-            "path": "bash",
-            "args": ["start.sh"]
-          }
-        },
-        "terminal.integrated.defaultProfile.linux": "agent"
-      }
+      "extensions": ["ms-python.python"]
     }
   }
 }
