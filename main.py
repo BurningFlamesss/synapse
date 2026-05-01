@@ -1,4 +1,5 @@
 import asyncio
+import os
 from pathlib import Path
 import sys
 
@@ -376,6 +377,23 @@ def main(
     prompt: str | None,
     cwd: Path | None
 ):
+    import json
+    config_file = Path.home() / ".synapse_config.json"
+
+    if not os.environ.get("API_KEY"):
+        if config_file.exists():
+            saved = json.loads(config_file.read_text())
+            os.environ["API_KEY"] = saved["api_key"]
+        else:
+            key = input("Enter your OpenRouter API key: ").strip()
+            config_file.write_text(json.dumps({"api_key": key}))
+            os.environ["API_KEY"] = key
+
+    if not os.environ.get("BASE_URL"):
+        os.environ["BASE_URL"] = "https://openrouter.ai/api/v1"
+        
+        
+        
     try:
         config = load_config(cwd=cwd)
     except Exception as e:
