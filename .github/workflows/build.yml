@@ -1,0 +1,25 @@
+name: Build Executables
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyinstaller click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli
+      - run: pyinstaller --onefile --name synapse main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synapse-${{ matrix.os }}
+          path: dist/
