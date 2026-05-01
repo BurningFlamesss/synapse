@@ -67,6 +67,16 @@ Requires Python 3.12 or higher.
 > Optionally configure `.synapse/synapse_config.toml` to customise models, MCP servers, and more.
 
 
+## Preview
+
+![](https://cdn.hackclub.com/019de29e-5798-74ed-b316-fafb8da65172/Screenshot%202026-05-01%20135845.png)
+![](https://cdn.hackclub.com/019de2a3-0afe-77fe-893e-be3d8fb80e50/Screenshot%202026-05-01%20140838.png)
+![](https://cdn.hackclub.com/019de2aa-dfb6-7feb-8475-1e89ec865b64/Screenshot%202026-05-01%20141703.png)
+![](https://cdn.hackclub.com/019de2a9-84f4-75a7-83f0-0f2a4c06d140/Screenshot%202026-05-01%20141534.png)
+
+Yeah! These are four different image of the application. Due to my hands, there pictures arenot captured nicely yet I believe it some what that App works in my device 😅
+
+
 ## Tools
 - read_file
 - write_file
