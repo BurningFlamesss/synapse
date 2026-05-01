@@ -2,37 +2,69 @@
 
 Synapse is an AI agent that can execute tasks using tools and manage conversations. It is feature packed with streaming, multi-turn conversations, configurability, and is equipped with built-in tools for operating files, directory operations, text searching, shell executions, web access, memory layer and todo manager, All with insanely optimized context management, safety first approach, session management, MCP integrations, subagents and a minimalistic Terminal User Interface Design Choice.
 
-Synapse is terminal agentic tool which cannot be rendered in web thus, it doesnot have a public testing url. You have to work a little bit to get it running. Sorry for that :(
-
-## Setup
-
-#### 1. Run `bash start.sh` if using in codespace if necessary.
+Synapse is a terminal-based agentic AI tool. Choose one of the three methods below to get started.
 
 
-OR
+---
 
+## Method 1: Download the Executable (Easiest)
 
-#### 1. Make Sure that you have python 3 or higher installed
+No Python or setup required.
+
+1. Go to the [latest release](https://github.com/BurningFlamesss/synapse/releases/latest)
+2. Download the file for your OS:
+   - `synapse.exe` — Windows
+   - `synapse` — macOS
+   - `synapse` — Linux
+3. Run it — on first launch it will ask for your OpenRouter API key
+4. Get a free API key at [openrouter.ai](https://openrouter.ai)
+
+> **Windows users:** If you see a SmartScreen warning, click **More info → Run anyway**
+
+---
+
+## Method 2: GitHub Codespaces (No Local Setup)
+
+1. Click below to open in Codespaces:
+
+   [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/BurningFlamesss/synapse)
+
+2. Wait for the environment to set up automatically
+3. Enter your OpenRouter API key when prompted
+4. The agent starts automatically in the terminal
+
+---
+
+## Method 3: Manual Setup (Python)
+
+Requires Python 3.12 or higher.
+
+1. Clone the repo
 ```bash
-pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli
+   git clone https://github.com/BurningFlamesss/synapse
+   cd synapse
 ```
-#### 2. (Please if none of these works for you, consider asking to an AI. Sorry for inconvience)
+
+2. Install dependencies
 ```bash
-# In mac
-export API_KEY="YOUR_OPENROUTER_API_KEY" && export BASE_URL="https://openrouter.ai/api/v1"
-
-# In Windows
-$env:API_KEY="YOUR_OPENROUTER_API_KEY" && $env:BASE_URL="https://openrouter.ai/api/v1"
+   pip install click ddgs fastmcp httpx openai platformdirs pydantic rich tiktoken tomli
 ```
 
-#### 3. You might need to go through .synapse/synapse_config.toml and change filesystem MCP
-
-#### 4. Run the file
+3. Set your API key
 ```bash
-python main.py
+   # macOS/Linux
+   export API_KEY="your-openrouter-api-key"
+
+   # Windows (PowerShell)
+   $env:API_KEY="your-openrouter-api-key"
 ```
 
-#### 5. Now It's ready to be used.
+4. Run
+```bash
+   python main.py
+```
+
+> Optionally configure `.synapse/synapse_config.toml` to customise models, MCP servers, and more.
 
 
 ## Tools
