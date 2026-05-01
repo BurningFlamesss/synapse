@@ -23,7 +23,6 @@ jobs:
       - run: pip install pyinstaller
       - run: pip install --no-binary pydantic pydantic
       - run: pip install --no-binary platformdirs platformdirs
-      - run: pip install --no-binary tomli tomli
       - run: pip install click ddgs fastmcp httpx openai rich tiktoken
       - run: >
           pyinstaller --onefile --name synapse
@@ -33,8 +32,8 @@ jobs:
           --collect-all httpx
           --collect-all openai
           --collect-all tiktoken
+          --collect-data tiktoken
           --collect-all platformdirs
-          --collect-all tomli
           --collect-all fastmcp
           --copy-metadata fastmcp
           --copy-metadata openai

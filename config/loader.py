@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 from platformdirs import user_config_dir, user_data_dir
-import tomli
+import tomllib as tomli
 from config.config import Config
 from utils.errors import ConfigError
 import logging
