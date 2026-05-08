@@ -89,7 +89,8 @@ Yeah! These are four different image of the application. Due to my hands, there 
 - web_fetch
 - todos
 - memory
-_(Extendable by adding more on .synapse/tools)_
+
+*(Extendable by adding more on .synapse/tools)*
 
 ## SubAgents
 - Specialized subagents for specific tasks
@@ -98,7 +99,8 @@ _(Extendable by adding more on .synapse/tools)_
 ### Some Builtin SubAgents
 - subagent_codebase_investigator
 - subagent_code_reviewer
-_(Extendable by adding more on tools/subagents.py)_
+  
+*(Extendable by adding more on tools/subagents.py)*
 
 ## MCPS
 - Connect to Model Context Protocol servers
@@ -120,6 +122,7 @@ _(Extendable by adding more on tools/subagents.py)_
 - filesystem__search_files
 - filesystem__get_file_info
 - filesystem__list_allowed_directories
+  
 *(Complete control on you. Just add more on .synapse/synapse_configs.toml)*
 
 ## Hooks
@@ -130,6 +133,7 @@ _(Extendable by adding more on tools/subagents.py)_
 
 ### Some Builtin Hooks
 - Log
+  
 *(Complete control on you. Just add more on .synapse/synapse_configs.toml and scripts at scripts/)*
 
 ## Context Management
